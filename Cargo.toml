@@ -1,0 +1,55 @@
+[package]
+name = "nano-agent"
+version = "0.1.0"
+edition = "2021"
+description = "NanoAgent - Agente de IA autónomo optimizado para bajos recursos"
+authors = ["IMANDRO"]
+repository = "https://github.com/IMANDRO/NanoAgent"
+homepage = "https://github.com/IMANDRO/NanoAgent"
+license = "MIT"
+
+[dependencies]
+# Async runtime mínimo
+tokio = { version = "1", features = ["rt-multi-thread", "macros", "io-util"] }
+
+# HTTP client ligero
+reqwest = { version = "0.12", features = ["json", "rustls-tls"], default-features = false }
+
+# Serialización
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+
+# SQLite para persistencia (sin servidor)
+rusqlite = { version = "0.32", features = ["bundled", "vtab"] }
+
+# CLI interactivo
+rustyline = "14"
+
+# Variables de entorno
+dotenvy = "0.15"
+
+# Colores para terminal
+colored = "2"
+
+# Para parsing de URLs y paths
+url = "2"
+
+# Errores
+anyhow = "1"
+
+# Logging mínimo
+log = "0.4"
+env_logger = "0.11"
+
+# Directorio de configuración
+dirs = "5"
+
+# Async traits
+async-trait = "0.1"
+
+[profile.release]
+opt-level = "s"       # Optimizar para tamaño
+lto = true            # Link-time optimization
+codegen-units = 1     # Un solo codegen unit
+strip = true          # Strip symbols
+panic = "abort"       # Abort en panic (más pequeño)

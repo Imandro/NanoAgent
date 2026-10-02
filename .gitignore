@@ -1,0 +1,7 @@
+/target
+.env
+*.db
+*.db-journal
+hola.txt
+hola_mundo.py
+calculadora.html
