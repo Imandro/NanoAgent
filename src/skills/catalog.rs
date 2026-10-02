@@ -124,6 +124,99 @@ pub static SKILLS: &[Skill] = &[
         permission_hints: &[],
     },
     Skill {
+        id: "javascript",
+        name: "JavaScript",
+        description: "ES modules, promises y el ecosistema npm",
+        category: Category::Language,
+        instructions: "JAVASCRIPT:
+- Usa ES modules (import/export), no require, salvo que el proyecto ya sea CommonJS.
+- Todo await necesita try/catch o .catch(): las promesas sin manejar fallan en silencio.
+- No compares objetos con ===; compara por propiedad o usa comparacion profunda.
+- Los parametros de funciones se pueden reasignar; usa const por defecto.
+- Revisa las dependencias antes de anadir otra: el arbol de npm se infla rapido.",
+        tools: &["shell", "read_file", "edit_file", "grep"],
+        keywords: &["javascript", "js", "node", "npm", "express", "vite", "webpack"],
+        permission_hints: &[],
+    },
+    Skill {
+        id: "php",
+        name: "PHP",
+        description: "Composer, tipado estricto y Laravel/Symfony",
+        category: Category::Language,
+        instructions: "PHP:
+- Declara declare(strict_types=1) en cada archivo.
+- Usa PSR-12 y las herramientas de formato que ya use el proyecto.
+- El acceso a base de datos va por PDO con consultas preparadas, nunca concatenando.
+- Moderniza: enum, readonly, match y tipos union en lugar de sintaxis antigua.
+- Instala con Composer, nunca a mano.",
+        tools: &["shell", "read_file", "edit_file", "grep"],
+        keywords: &["php", "laravel", "symfony", "composer", "wordpress"],
+        permission_hints: &[],
+    },
+    Skill {
+        id: "kotlin",
+        name: "Kotlin",
+        description: "Null safety, coroutines y Android moderno",
+        category: Category::Language,
+        instructions: "KOTLIN:
+- El sistema de tipos ya te protege contra null: no uses !! salvo que sepas que no es null.
+- Usa coroutines con viewModelScope; no bloquees el hilo principal.
+- Los data class generan equals y hashCode bien; no los reescribas a mano.
+- Usa sealed class o sealed interface para estados cerrados en lugar de enums con datos.
+- Las extensions function son la forma idiomatica de agregar utileria.",
+        tools: &["shell", "read_file", "edit_file", "grep"],
+        keywords: &["kotlin", "android", "gradle", "compose", "coroutines"],
+        permission_hints: &[],
+    },
+    Skill {
+        id: "swift",
+        name: "Swift",
+        description: "Optionals, value types y ARC",
+        category: Category::Language,
+        instructions: "SWIFT:
+- Desenvuelve los optionals con guard let de inmediato; no entres a un scope con optionals sin resolver.
+- Los structs son el tipo por defecto. Usa class solo cuando necesites identidad o mutabilidad compartida.
+- Las closuresescapantes se marcan con @escaping; olvidadarlo es bug de compilacion.
+- Evita los force unwraps (!) en produccion.
+- Respeta el aislamiento de actors: el trabajo concurrente debe vivir en un actor o Task.detached.",
+        tools: &["shell", "read_file", "edit_file", "grep"],
+        keywords: &["swift", "ios", "xcode", "uikit", "swiftui", "vapor"],
+        permission_hints: &[],
+    },
+    Skill {
+        id: "sql",
+        name: "SQL",
+        description: "Consultas, indices, joins y migraciones",
+        category: Category::Language,
+        instructions: "SQL:
+- Escribe consultas parametrizadas. Nunca concatentes valores de entrada.
+- Evita SELECT *: nombra las columnas para no arrastrar campos que no usas.
+- Un JOIN sin ON explicito sobre una columna indexada es la causa mas comun de lentitud.
+- Toda columna por la que se filtra o ordena convenientemente debe tener indice.
+- Las migraciones deben ser reversibles y no perder datos existentes.
+- Cuidado con UPDATE o DELETE sin WHERE: verifica el numero de filas afectadas.",
+        tools: &["sql_query", "read_file", "edit_file", "shell"],
+        keywords: &["sql", "query", "consulta", "select", "join", "indice", "migracion", "postgres", "mysql", "sqlite"],
+        permission_hints: &[("sql_query", PermissionLevel::Ask)],
+    },
+    Skill {
+        id: "shell",
+        name: "Shell / Bash",
+        description: "Scripts portables, quoting y set -euo pipefail",
+        category: Category::Language,
+        instructions: "SHELL:
+- Empieza todo script con set -euo pipefail.
+- Cita siempre las expansiones de variables y de comandos; sin comillas, los espacios rompen el argumento.
+- Prefiere Here-documents o heredocs para pasar texto multilinea.
+- Usa arrays para construir argumentos; concatenar cadenas rompe con espacios.
+- Prefiere find -print0 con bucles -read -d '' para nombres con espacios.
+- Un script debe ser idempotente si corre en CI: no asumas que parte de un estado previo.
+- No uses eval; ejecuta el comando directamente.",
+        tools: &["shell", "read_file", "edit_file", "grep"],
+        keywords: &["bash", "shell", "script", "sh", "zsh", "powershell", "batch"],
+        permission_hints: &[],
+    },
+    Skill {
         id: "backend",
         name: "Backend",
         description: "APIs, base de datos y logica de negocio",
@@ -136,7 +229,7 @@ pub static SKILLS: &[Skill] = &[
 - Indices de base de datos: revisa que las consultas frecuentes esten cubiertas.
 - Maneja los fallos de red con reintentos con backoff, no de inmediato.",
         tools: &["read_file", "write_file", "grep", "sql_query"],
-        keywords: &["api", "endpoint", "backend", "rest", "graphql", "servidor", "microservicio"],
+        keywords: &["api", "endpoint", "backend", "rest", "graphql", "microservicio", "controlador", "service layer"],
         permission_hints: &[("sql_query", PermissionLevel::Ask)],
     },
     Skill {
@@ -152,7 +245,7 @@ pub static SKILLS: &[Skill] = &[
 - No guardes en el estado del cliente lo que puede venir del servidor.
 - Respeta la accesibilidad del color: nunca comuniques informacion solo con color.",
         tools: &["read_file", "write_file", "grep"],
-        keywords: &["frontend", "ui", "componente", "css", "react", "vue", "html", "accesibilidad"],
+        keywords: &["frontend", "ui", "componente", "css", "react", "vue", "html", "formulario", "accesible"],
         permission_hints: &[],
     },
     Skill {
@@ -198,6 +291,36 @@ pub static SKILLS: &[Skill] = &[
         tools: &["read_file", "write_file", "shell"],
         keywords: &["android", "ios", "mobile", "react native", "flutter", "swift", "kotlin"],
         permission_hints: &[],
+    },
+    Skill {
+        id: "fullstack",
+        name: "Fullstack",
+        description: "Contratos entre frontend y backend",
+        category: Category::Role,
+        instructions: "FULLSTACK:
+- El contrato entre cliente y servidor se define primero, en un solo lugar.
+- Valida la entrada en el servidor aunque el cliente ya la valide. El cliente no es una frontera fiable.
+- Los codigos de error deben ser estables y documentados; el cliente depende de ellos.
+- Cierra los endpoints con versioning (/v1) antes de que haya consumidores.
+- Piensa en el caso de red lento y en el de error: la UI debe poder mostrar ambos estados.",
+        tools: &["read_file", "write_file", "edit_file", "grep", "shell"],
+        keywords: &["fullstack", "api", "cliente", "servidor", "endpoint", "contrato", "rest"],
+        permission_hints: &[],
+    },
+    Skill {
+        id: "sysadmin",
+        name: "Sysadmin",
+        description: "Servidores, procesos, logs y redes",
+        category: Category::Role,
+        instructions: "SYSADMIN:
+- No reinicies ni mates procesos sin saber quien los inicio y que dependencias tienen.
+- Cambios de sistema: copia de seguridad antes de tocar, y documenta como revertir.
+- Mira los logs antes de reiniciar nada: reiniciar borra la evidencia.
+- Los puertos y permisos se ajustan lo mas cerrado posible.
+- Comprueba si un puerto ya esta ocupado antes de asignarlo.",
+        tools: &["shell", "process", "read_file", "http_request"],
+        keywords: &["servidor", "linux", "systemd", "nginx", "apache", "firewall", "red", "ssh", "dns", "proceso", "log"],
+        permission_hints: &[("shell", PermissionLevel::Ask)],
     },
     Skill {
         id: "testing",
@@ -298,7 +421,148 @@ pub static SKILLS: &[Skill] = &[
 - La optimizacion prematura hace el codigo mas dificil de leer a cambio de nada medible.
 - Mide de nuevo tras cada cambio para confirmar que ayudaba.",
         tools: &["read_file", "grep", "shell"],
-        keywords: &["performance", "rendimiento", "lento", "optimizar", "memoria", "cpu", "cache", "cuello de botella"],
+        keywords: &["performance", "rendimiento", "va lento", "va muy lento", "optimizar", "optimiza", "memoria", "cpu", "cache", "cuello de botella", "profiling", "latencia"],
+        permission_hints: &[],
+    },
+    Skill {
+        id: "debugging",
+        name: "Debugging",
+        description: "Encontrar la causa raiz antes de parchear",
+        category: Category::Workflow,
+        instructions: "DEBUGGING:
+- Reproduce el fallo primero. Un fallo que no reproduces no lo puedes verificar.
+- Aislalo minimizando: quita codigo hasta que desaparezca, ese es el culpable.
+- Lee el error completo, incluido el stack trace y los warnings previos al fallo.
+- No cambies varias cosas a la vez. Si funciono al cambiar una sola, sabes cual era.
+- Cuando encuentres la causa, arregla la causa. Un parche que oculta el sintoma vuelve como error distinto.
+- Si tras varios intentos no das con ello, di que no lo sabes en vez de adivinar una causa mas.",
+        tools: &["read_file", "grep", "shell", "edit_file"],
+        keywords: &["bug", "error", "falla", "no funciona", "rompe", "exception", "panic", "stacktrace", "crash", "debug", "falla"],
+        permission_hints: &[],
+    },
+    Skill {
+        id: "error-handling",
+        name: "Manejo de errores",
+        description: "Errores utiles y nada de silenciar fallos",
+        category: Category::Workflow,
+        instructions: "MANEJO DE ERRORES:
+- No te tragues errores con un catch vacio. Un fallo silencioso se descubre tarde y mal.
+- Si no puedes hacer nada util con el error, propagalo con contexto de donde fallo.
+- El mensaje debe responder: que fallo, con que valor, y como reintentar.
+- No expongas trazas de pila ni rutas internas al cliente final.
+- Distingue el error esperado (validacion, no encontrado) del inesperado (bug). Solo el segundo necesita log de error.
+- No trates de capturar Exception como un todo para que pase algo: oculta los bugs reales.",
+        tools: &["read_file", "edit_file", "grep"],
+        keywords: &["error", "exception", "catch", "try", "panic", "fallo", "resiliencia", "retry"],
+        permission_hints: &[],
+    },
+    Skill {
+        id: "api-design",
+        name: "Diseno de API",
+        description: "Contratos estables, versionado y compatibilidad",
+        category: Category::Workflow,
+        instructions: "DISEÑO DE API:
+- Anade campos, nunca los quites ni cambies su tipo: romper a los clientes es el costo mas caro.
+- Versiona desde el principio (/v1), aunque te parezca que no lo necesitas. Retirarlo despues es la migracion dolorosa.
+- Los codigos de estado deben ser precisos: 404 es ausencia, 400 es peticion invalida, 422 es error de validacion.
+- Los campos opcionales se documentan con su valor por defecto.
+- Define limites y paginacion desde el inicio; anadirlos despues rompe a los clientes que ya dependen del todo.
+- Sin endpoints que muten estado a traves de GET.",
+        tools: &["read_file", "write_file", "edit_file"],
+        keywords: &["api", "endpoint", "rest", "openapi", "swagger", "contrato", "versionado", "schema"],
+        permission_hints: &[],
+    },
+    Skill {
+        id: "migrations",
+        name: "Migraciones",
+        description: "Cambios de esquema sin perder datos",
+        category: Category::Workflow,
+        instructions: "MIGRACIONES:
+- Toda migracion debe ser reversible: escribe el down, aunque luego no lo uses.
+- No renombres ni elimines columnas en el mismo despliegue que deja de usarlas. Primero se deja de leer, luego se borra.
+- Las claves foraneas y los indices bloquean tablas grandes: comprueba el impacto antes de ejecutarlo en produccion.
+- Anadir columna con default NOT NULL reescribe la tabla en motores antiguos. Anade nullable, migra, y despues aplica el default.
+- Prueba el down antes de dar por buena la migracion.",
+        tools: &["sql_query", "read_file", "edit_file", "shell"],
+        keywords: &["migracion", "migration", "schema", "alter table", "db", "base de datos", "indice"],
+        permission_hints: &[("sql_query", PermissionLevel::Ask)],
+    },
+    Skill {
+        id: "git-workflow-advanced",
+        name: "Git avanzado",
+        description: "Deshacer, rebases y recuperación",
+        category: Category::Workflow,
+        instructions: "GIT AVANZADO:
+- Antes de una operacion dudosa, git stash o crea una rama. Deshacer en local siempre; reescribir lo publicado casi nunca.
+- git reflog encuentra commits perdidos aunque los hayas borrado.
+- Un rebase en una rama publicada molesta a todos los que la tienen.
+- Resuelve conflictos entendiendo las dos versiones. No cojas una sin leer la otra.
+- No uses git add . sin revisar: mete archivos que no querias versionar.",
+        tools: &["shell", "read_file", "grep"],
+        keywords: &["git", "rebase", "merge", "stash", "cherry-pick", "reflog", "conflict", "deshacer", "undo"],
+        permission_hints: &[],
+    },
+    Skill {
+        id: "accessibility",
+        name: "Accesibilidad",
+        description: "Web usable con teclado y lector de pantalla",
+        category: Category::Workflow,
+        instructions: "ACCESIBILIDAD:
+- Todo elemento interactivo es alcanzable con Tab y activable con Enter o Espacio.
+- Los labels de los campos son explicitos; el placeholder no es un label accesible.
+- El orden del DOM debe seguir el orden visual. No reordenes con CSS para maquetar.
+- El foco tiene que verse: no elimines el outline sin poner algo en su lugar.
+- Los dialogs atrapan el foco y lo devuelven al cerrarse.
+- El contraste de texto debe cumplir al menos 4.5:1.",
+        tools: &["read_file", "edit_file", "grep"],
+        keywords: &["accesibilidad", "a11y", "aria", "wcag", "teclado", "lector de pantalla", "foco", "tab"],
+        permission_hints: &[],
+    },
+    Skill {
+        id: "concurrency",
+        name: "Concurrencia",
+        description: "Hilos, deadlocks y condiciones de carrera",
+        category: Category::Workflow,
+        instructions: "CONCURRENCIA:
+- Los datos compartidos entre hilos necesitan sincronizacion explicita. Sin ella, el comportamiento es indefinido.
+- Mantiene los locks en orden consistente para evitar deadlocks.
+- No bloquees un lock mientras esperas otra operacion lenta de I/O o de red.
+- El estado compartido necesita ser visible entre hilos; si no, el optimizador lo reordena y aparece un bug fantasma.
+- Los datos inmutables eliminan la categoria entera de bugs de concurrencia: prefierelos.
+- Reproduce con -race o el detector equivalente antes de dar por buena una correccion.",
+        tools: &["read_file", "edit_file", "grep", "shell"],
+        keywords: &["concurrencia", "concurrencia", "hilo", "thread", "mutex", "lock", "race", "deadlock", "async", "paralelo", "hilos"],
+        permission_hints: &[],
+    },
+    Skill {
+        id: "observability",
+        name: "Observabilidad",
+        description: "Logs estructurados, metricas y trazas",
+        category: Category::Workflow,
+        instructions: "OBSERVABILIDAD:
+- Los logs son datos estructurados, no texto libre: un log que no se puede consultar no sirve.
+- Cada log lleva un identificador de correlacion para unirlo con la peticion o el trace.
+- Registra los eventos y sus resultados, no cada iteracion interna.
+- Los warnings y errors deben verse en produccion; un log en debug no existe para el usuario.
+- Nunca registres contrasenas, tokens ni datos personales.
+- Las metricas tienen nombre, unidad y etiquetas de baja cardinalidad.",
+        tools: &["read_file", "write_file", "edit_file", "shell"],
+        keywords: &["log", "logging", "metrica", "observabilidad", "monitoring", "traza", "trace", "alerta", "dashboard"],
+        permission_hints: &[],
+    },
+    Skill {
+        id: "api-consumer",
+        name: "Consumo de APIs",
+        description: "Llamadas HTTP, reintentos y limites de tasa",
+        category: Category::Workflow,
+        instructions: "CONSUMO DE APIs:
+- Aplica timeout a toda llamada externa. Una llamada sin timeout bloquea el recurso para siempre.
+- Reintenta solo errores transitorios (5xx, timeout) con backoff exponencial y jitter. Un 4xx no se arregla reintentando.
+- Respeta el Retry-After y los limites de tasa del proveedor.
+- Cachea cuando el dato no cambia entre peticiones y hay una ventana de tolerancia.
+- Normaliza los errores del proveedor: la respuesta cruda no debe filtrarse a la logica de negocio.",
+        tools: &["http_request", "read_file", "edit_file", "shell"],
+        keywords: &["api", "http", "rest", "request", "fetch", "retry", "timeout", "webhook", "cliente http"],
         permission_hints: &[],
     },
     Skill {
@@ -374,16 +638,28 @@ pub fn by_category(category: Category) -> Vec<&'static Skill> {
 pub fn suggest_for(input: &str) -> Option<&'static Skill> {
     let lower = input.to_lowercase();
 
-    let mut best: Option<(&'static Skill, usize)> = None;
+    let mut best: Option<(&'static Skill, f64)> = None;
 
     for skill in SKILLS {
-        let score = skill
+        if skill.keywords.is_empty() {
+            continue;
+        }
+
+        // Los keywords cortos ("bug", "go") hacen match con facilidad de sobra y
+        // Falsean la puntuacion, asi que se pesan segun su longitud.
+        let score: f64 = skill
             .keywords
             .iter()
-            .filter(|k| lower.contains(**k))
-            .count();
+            .map(|k: &&'static str| {
+                if lower.contains(*k) {
+                    1.0 + k.len() as f64 / 10.0
+                } else {
+                    0.0
+                }
+            })
+            .sum();
 
-        if score == 0 {
+        if score <= 0.0 {
             continue;
         }
 
