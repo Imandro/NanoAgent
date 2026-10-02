@@ -167,9 +167,7 @@ impl Tool for PatchFileTool {
                     let find = op["find"]
                         .as_str()
                         .ok_or_else(|| anyhow::anyhow!("replace requiere 'find'"))?;
-                    let replace_with = op["content"]
-                        .as_str()
-                        .unwrap_or("");
+                    let replace_with = op["content"].as_str().unwrap_or("");
 
                     if content.contains(find) {
                         content = content.replacen(find, replace_with, 1);
@@ -179,10 +177,9 @@ impl Tool for PatchFileTool {
                 "insert" => {
                     let line = op["line"]
                         .as_u64()
-                        .ok_or_else(|| anyhow::anyhow!("insert requiere 'line'"))? as usize;
-                    let insert_content = op["content"]
-                        .as_str()
-                        .unwrap_or("");
+                        .ok_or_else(|| anyhow::anyhow!("insert requiere 'line'"))?
+                        as usize;
+                    let insert_content = op["content"].as_str().unwrap_or("");
 
                     let lines: Vec<&str> = content.lines().collect();
                     let mut new_lines = Vec::new();

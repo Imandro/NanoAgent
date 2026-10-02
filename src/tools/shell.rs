@@ -44,13 +44,9 @@ impl Tool for ShellTool {
             .ok_or_else(|| anyhow::anyhow!("Falta el parámetro 'command'"))?;
 
         let output = if cfg!(target_os = "windows") {
-            Command::new("cmd")
-                .args(["/C", command])
-                .output()?
+            Command::new("cmd").args(["/C", command]).output()?
         } else {
-            Command::new("sh")
-                .args(["-c", command])
-                .output()?
+            Command::new("sh").args(["-c", command]).output()?
         };
 
         let stdout = String::from_utf8_lossy(&output.stdout).to_string();

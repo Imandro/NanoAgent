@@ -46,9 +46,16 @@ impl Tool for QueryTool {
         let conn = Connection::open("agent_queries.db")?;
 
         let upper = query.trim().to_uppercase();
-        if upper.starts_with("SELECT") || upper.starts_with("EXPLAIN") || upper.starts_with("PRAGMA") {
+        if upper.starts_with("SELECT")
+            || upper.starts_with("EXPLAIN")
+            || upper.starts_with("PRAGMA")
+        {
             let mut stmt = conn.prepare(query)?;
-            let columns: Vec<String> = stmt.column_names().into_iter().map(|s| s.to_string()).collect();
+            let columns: Vec<String> = stmt
+                .column_names()
+                .into_iter()
+                .map(|s| s.to_string())
+                .collect();
 
             let rows = stmt.query_map([], |row| {
                 let mut values = Vec::new();
@@ -68,7 +75,11 @@ impl Tool for QueryTool {
             }
 
             Ok(result.join("\n"))
-        } else if upper.starts_with("CREATE") || upper.starts_with("INSERT") || upper.starts_with("UPDATE") || upper.starts_with("DELETE") {
+        } else if upper.starts_with("CREATE")
+            || upper.starts_with("INSERT")
+            || upper.starts_with("UPDATE")
+            || upper.starts_with("DELETE")
+        {
             conn.execute_batch(query)?;
             Ok("Consulta ejecutada correctamente".to_string())
         } else {

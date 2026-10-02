@@ -94,8 +94,8 @@ impl Config {
                 .filter(|k| !k.is_empty())
         };
 
-        let model = std::env::var("AI_MODEL")
-            .unwrap_or_else(|_| provider.default_model().to_string());
+        let model =
+            std::env::var("AI_MODEL").unwrap_or_else(|_| provider.default_model().to_string());
 
         Ok(Config {
             provider,

@@ -7,35 +7,68 @@ use crate::config::Config;
 use crate::db::store::Store;
 use crate::permissions::{PermissionLevel, Permissions};
 use crate::providers::{LlmClient, Message, ToolCall};
+use crate::skills::Profile;
 use crate::tools::ToolRegistry;
 
-const SYSTEM_PROMPT: &str = "Eres NanoAgent, un asistente de IA para programación inspirado en Claude Code y OpenCode.
+const BASE_PROMPT: &str = "Eres NanoAgent, un asistente de IA para programacion.
 
 CAPACIDADES PRINCIPALES:
-- Leer, crear, modificar y eliminar archivos de código fuente
+- Leer, crear, modificar y eliminar archivos de codigo fuente
 - Ejecutar comandos de terminal (build, test, run, etc.)
-- Buscar en código con expresiones regulares (grep)
-- Editar archivos de forma precisa con diff/patch
+- Buscar en codigo con expresiones regulares (grep)
+- Editar archivos de forma precisa con edit_file y patch_file
 - Navegar la estructura del proyecto
 - Ejecutar scripts y comandos del sistema
 
 INSTRUCCIONES:
-1. Analiza el código existente antes de hacer cambios
+1. Analiza el codigo existente antes de hacer cambios
 2. Usa herramientas de lectura para entender el contexto
 3. Edita archivos de forma precisa (edit_file, patch_file)
 4. Verifica los cambios ejecutando tests o builds
-5. Responde en español con explicaciones concisas
-6. Sé conciso: muestra el código relevante, no todo el archivo
-7. Si hay errores, investiga la causa antes de sugerir soluciones
+5. Si hay errores, investiga la causa antes de sugerir soluciones
+6. Usa /help para ver comandos y /skills para gestionar tus skills
 
 COMPORTAMIENTO:
-- Sé directo y eficiente
-- Muestra fragmentos de código relevantes
-- Explica brevemente qué estás haciendo
+- Se directo y eficiente
+- Muestra fragmentos de codigo relevantes, no el archivo entero
+- Explica brevemente que estas haciendo
 - Si el usuario pide algo ambiguo, pregunta para clarificar
-- Usa /help para ver comandos disponibles
 
-Límite de 15 pasos de herramientas por mensaje.";
+Limite de 15 pasos de herramientas por mensaje.";
+
+fn build_system_prompt(profile: &crate::skills::Profile, working_dir: &str) -> String {
+    let mut sections: Vec<String> = vec![BASE_PROMPT.to_string()];
+
+    sections.push(format!(
+        "IDIOMA Y ESTILO:\n{}",
+        profile.language.instructions()
+    ));
+    sections.push(profile.verbosity.instructions().to_string());
+
+    if let Some(name) = &profile.name {
+        sections.push(format!(
+            "El usuario se identifica como '{}'. Dirigete a el por su nombre cuando sea natural.",
+            name
+        ));
+    }
+
+    let active = profile.active();
+    if !active.is_empty() {
+        let mut block = String::from("SKILLS ACTIVAS:");
+        for skill in &active {
+            block.push_str(&format!("\n\n[{}]\n{}", skill.name, skill.instructions));
+        }
+        sections.push(block);
+    } else {
+        sections.push(
+            "No hay skills configuradas. Puedes sugerirle al usuario usar /setup para activarlas."
+                .to_string(),
+        );
+    }
+
+    sections.push(format!("Directorio de trabajo actual: {}", working_dir));
+    sections.join("\n\n")
+}
 
 pub struct Agent {
     llm: LlmClient,
@@ -45,10 +78,11 @@ pub struct Agent {
     conversation_id: i64,
     system_messages: Vec<Message>,
     working_dir: String,
+    profile: Profile,
 }
 
 impl Agent {
-    pub fn new(config: Config, permissions: Permissions) -> Result<Self> {
+    pub fn new(config: Config, permissions: Permissions, profile: Profile) -> Result<Self> {
         let db_path = config.db_path();
         let store = Store::open(&db_path)?;
         let conversation_id = store.new_conversation()?;
@@ -62,7 +96,7 @@ impl Agent {
 
         let system_messages = vec![Message {
             role: "system".to_string(),
-            content: format!("{}\n\nDirectorio de trabajo actual: {}", SYSTEM_PROMPT, working_dir),
+            content: build_system_prompt(&profile, &working_dir),
             tool_call_id: None,
         }];
 
@@ -74,6 +108,7 @@ impl Agent {
             conversation_id,
             system_messages,
             working_dir,
+            profile,
         })
     }
 
@@ -98,7 +133,10 @@ impl Agent {
                 return Ok("Límite de pasos alcanzado.".to_string());
             }
 
-            let (content, tool_calls) = self.llm.chat(&messages, Some(&self.tools.definitions())).await?;
+            let (content, tool_calls) = self
+                .llm
+                .chat(&messages, Some(&self.tools.definitions()))
+                .await?;
 
             if !tool_calls.is_empty() {
                 if let Some(ref c) = content {
@@ -114,16 +152,33 @@ impl Agent {
                     let perm = self.permissions.check(&tool_call.function.name);
                     match perm {
                         PermissionLevel::Deny => {
-                            println!("  {} {} {}", "🚫".dimmed(), tool_call.function.name.yellow(), "BLOQUEADO".red());
+                            println!(
+                                "  {} {} {}",
+                                "🚫".dimmed(),
+                                tool_call.function.name.yellow(),
+                                "BLOQUEADO".red()
+                            );
                             messages.push(Message {
                                 role: "tool".to_string(),
-                                content: format!("Herramienta '{}' bloqueada por permisos", tool_call.function.name),
+                                content: format!(
+                                    "Herramienta '{}' bloqueada por permisos",
+                                    tool_call.function.name
+                                ),
                                 tool_call_id: Some(tool_call.id.clone()),
                             });
                             continue;
                         }
                         PermissionLevel::Ask => {
-                            // En modo no-interactivo, auto-approve
+                            println!(
+                                "  {} {} {}",
+                                "🔔".dimmed(),
+                                tool_call.function.name.yellow(),
+                                format!(
+                                    "(requiere confirmacion, se ejecuta: {})",
+                                    "si autorizaste en /setup"
+                                )
+                                .dimmed()
+                            );
                         }
                         PermissionLevel::Auto => {}
                     }
@@ -151,10 +206,7 @@ impl Agent {
 
                             messages.push(Message {
                                 role: "tool".to_string(),
-                                content: format!(
-                                    "[{}]: {}",
-                                    tool_call.function.name, r
-                                ),
+                                content: format!("[{}]: {}", tool_call.function.name, r),
                                 tool_call_id: Some(tool_call.id.clone()),
                             });
                         }
@@ -163,10 +215,7 @@ impl Agent {
 
                             messages.push(Message {
                                 role: "tool".to_string(),
-                                content: format!(
-                                    "[Error en {}]: {}",
-                                    tool_call.function.name, e
-                                ),
+                                content: format!("[Error en {}]: {}", tool_call.function.name, e),
                                 tool_call_id: Some(tool_call.id.clone()),
                             });
                         }
@@ -182,7 +231,8 @@ impl Agent {
                 content: response.clone(),
                 tool_call_id: None,
             };
-            self.store.add_message(self.conversation_id, &assistant_msg)?;
+            self.store
+                .add_message(self.conversation_id, &assistant_msg)?;
 
             return Ok(response);
         }
@@ -226,7 +276,27 @@ impl Agent {
         self.working_dir = dir.to_string();
         self.system_messages[0] = Message {
             role: "system".to_string(),
-            content: format!("{}\n\nDirectorio de trabajo actual: {}", SYSTEM_PROMPT, self.working_dir),
+            content: build_system_prompt(&self.profile, &self.working_dir),
+            tool_call_id: None,
+        };
+    }
+
+    pub fn profile(&self) -> &Profile {
+        &self.profile
+    }
+
+    pub fn profile_mut(&mut self) -> &mut Profile {
+        &mut self.profile
+    }
+
+    pub fn permissions_mut(&mut self) -> &mut Permissions {
+        &mut self.permissions
+    }
+
+    pub fn refresh_system_prompt(&mut self) {
+        self.system_messages[0] = Message {
+            role: "system".to_string(),
+            content: build_system_prompt(&self.profile, &self.working_dir),
             tool_call_id: None,
         };
     }

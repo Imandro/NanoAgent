@@ -56,7 +56,8 @@ impl Store {
     }
 
     pub fn get_messages(&self, conversation_id: i64, limit: usize) -> Result<Vec<Message>> {
-        let mut stmt = self.conn
+        let mut stmt = self
+            .conn
             .prepare(
                 "SELECT role, content FROM messages 
                  WHERE conversation_id = ?1 
@@ -65,7 +66,7 @@ impl Store {
             )
             .context("Error preparando consulta")?;
 
-            let messages = stmt
+        let messages = stmt
             .query_map(params![conversation_id, limit as i64], |row| {
                 Ok(Message {
                     role: row.get(0)?,
@@ -86,17 +87,17 @@ impl Store {
             .context("Error listando conversaciones")?;
 
         let convs = stmt
-            .query_map([], |row| {
-                Ok((row.get(0)?, row.get(1)?))
-            })?
+            .query_map([], |row| Ok((row.get(0)?, row.get(1)?)))?
             .collect::<Result<Vec<_>, _>>()?;
 
         Ok(convs)
     }
 
     pub fn delete_conversation(&self, id: i64) -> Result<()> {
-        self.conn
-            .execute("DELETE FROM messages WHERE conversation_id = ?1", params![id])?;
+        self.conn.execute(
+            "DELETE FROM messages WHERE conversation_id = ?1",
+            params![id],
+        )?;
         self.conn
             .execute("DELETE FROM conversations WHERE id = ?1", params![id])?;
         Ok(())

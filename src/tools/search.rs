@@ -105,7 +105,14 @@ impl SearchTool {
                     if name.starts_with('.') || name == "target" || name == "node_modules" {
                         continue;
                     }
-                    self.search_recursive(&path, pattern, contains, max_depth, current_depth + 1, results)?;
+                    self.search_recursive(
+                        &path,
+                        pattern,
+                        contains,
+                        max_depth,
+                        current_depth + 1,
+                        results,
+                    )?;
                 } else if path.is_file() {
                     let matches = if let Some(pat) = pattern {
                         let file_name = path.file_name().unwrap_or_default().to_string_lossy();

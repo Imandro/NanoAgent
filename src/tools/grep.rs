@@ -153,12 +153,22 @@ impl GrepTool {
 
                 if path.is_dir() {
                     let name = path.file_name().unwrap_or_default().to_string_lossy();
-                    if name.starts_with('.') || name == "target" || name == "node_modules"
-                        || name == "dist" || name == "__pycache__"
+                    if name.starts_with('.')
+                        || name == "target"
+                        || name == "node_modules"
+                        || name == "dist"
+                        || name == "__pycache__"
                     {
                         continue;
                     }
-                    self.search_recursive(&path, pattern, include, case_insensitive, depth + 1, results)?;
+                    self.search_recursive(
+                        &path,
+                        pattern,
+                        include,
+                        case_insensitive,
+                        depth + 1,
+                        results,
+                    )?;
                 } else if path.is_file() {
                     // Check include filter
                     if let Some(inc) = include {

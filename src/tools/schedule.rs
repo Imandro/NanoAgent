@@ -104,14 +104,12 @@ impl ScheduleTool {
                 #[cfg(target_os = "windows")]
                 {
                     // Use PowerShell Start-Sleep + invoke
-                    let ps_cmd = format!(
-                        "Start-Sleep -Seconds {}; {}",
-                        seconds, command
-                    );
+                    let ps_cmd = format!("Start-Sleep -Seconds {}; {}", seconds, command);
                     Command::new("powershell")
-                        .args(["-Command", &format!(
-                            "Start-Job -ScriptBlock {{ {} }} | Out-Null", ps_cmd
-                        )])
+                        .args([
+                            "-Command",
+                            &format!("Start-Job -ScriptBlock {{ {} }} | Out-Null", ps_cmd),
+                        ])
                         .spawn()?;
                 }
 
@@ -122,7 +120,10 @@ impl ScheduleTool {
                         .spawn()?;
                 }
 
-                Ok(format!("Tarea '{}' programada para ejecutarse en {} segundos", id, seconds))
+                Ok(format!(
+                    "Tarea '{}' programada para ejecutarse en {} segundos",
+                    id, seconds
+                ))
             }
             "cron" => {
                 let cron_expr = args["cron"]
@@ -132,10 +133,12 @@ impl ScheduleTool {
                 // Check if crontab exists and add entry
                 #[cfg(not(target_os = "windows"))]
                 {
-                    let entry = format!("{} {} # nano-agent:{}", 
-                        cron_expr, command, id);
+                    let entry = format!("{} {} # nano-agent:{}", cron_expr, command, id);
                     Command::new("sh")
-                        .args(["-c", &format!("(crontab -l 2>/dev/null; echo '{}') | crontab -", entry)])
+                        .args([
+                            "-c",
+                            &format!("(crontab -l 2>/dev/null; echo '{}') | crontab -", entry),
+                        ])
                         .spawn()?;
                     Ok(format!("Tarea '{}' programada con cron: {}", id, cron_expr))
                 }
@@ -146,10 +149,14 @@ impl ScheduleTool {
                     let result = Command::new("schtasks")
                         .args([
                             "/create",
-                            "/tn", &format!("NanoAgent_{}", id),
-                            "/tr", command,
-                            "/sc", "daily",
-                            "/st", "09:00",
+                            "/tn",
+                            &format!("NanoAgent_{}", id),
+                            "/tr",
+                            command,
+                            "/sc",
+                            "daily",
+                            "/st",
+                            "09:00",
                         ])
                         .output()?;
 
@@ -180,10 +187,14 @@ impl ScheduleTool {
                     let result = Command::new("schtasks")
                         .args([
                             "/create",
-                            "/tn", &format!("NanoAgent_{}", id),
-                            "/tr", command,
-                            "/sc", "daily",
-                            "/st", time,
+                            "/tn",
+                            &format!("NanoAgent_{}", id),
+                            "/tr",
+                            command,
+                            "/sc",
+                            "daily",
+                            "/st",
+                            time,
                         ])
                         .output()?;
 

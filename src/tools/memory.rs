@@ -159,7 +159,10 @@ impl MemoryTool {
             params![key],
         )?;
 
-        Ok(format!("Memoria '{}' guardada en categoría '{}'", key, category))
+        Ok(format!(
+            "Memoria '{}' guardada en categoría '{}'",
+            key, category
+        ))
     }
 
     async fn search(&self, query: &str, limit: usize) -> Result<String> {
@@ -180,7 +183,10 @@ impl MemoryTool {
                 let value: String = row.get(1)?;
                 let category: String = row.get(2)?;
                 let updated: String = row.get(3)?;
-                Ok(format!("[{}] {} = {} (actualizado: {})", category, key, value, updated))
+                Ok(format!(
+                    "[{}] {} = {} (actualizado: {})",
+                    category, key, value, updated
+                ))
             })?
             .collect::<Result<Vec<_>, _>>()?;
 
@@ -199,14 +205,20 @@ impl MemoryTool {
                     let value: String = row.get(1)?;
                     let category: String = row.get(2)?;
                     let updated: String = row.get(3)?;
-                    Ok(format!("[{}] {} = {} (actualizado: {})", category, key, value, updated))
+                    Ok(format!(
+                        "[{}] {} = {} (actualizado: {})",
+                        category, key, value, updated
+                    ))
                 })?
                 .collect::<Result<Vec<_>, _>>()?;
 
             if results.is_empty() {
                 Ok("No se encontraron memorias que coincidan".to_string())
             } else {
-                Ok(format!("Resultados (búsqueda simple):\n{}", results.join("\n")))
+                Ok(format!(
+                    "Resultados (búsqueda simple):\n{}",
+                    results.join("\n")
+                ))
             }
         } else {
             Ok(format!("Resultados de búsqueda:\n{}", results.join("\n")))
@@ -225,9 +237,10 @@ impl MemoryTool {
             .ok();
 
         match result {
-            Some((value, category, updated)) => {
-                Ok(format!("[{}] {} = {} (actualizado: {})", category, key, value, updated))
-            }
+            Some((value, category, updated)) => Ok(format!(
+                "[{}] {} = {} (actualizado: {})",
+                category, key, value, updated
+            )),
             None => Ok(format!("No se encontró memoria con clave '{}'", key)),
         }
     }

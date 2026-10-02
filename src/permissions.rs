@@ -5,9 +5,9 @@ use std::path::PathBuf;
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
 pub enum PermissionLevel {
-    Auto,      // Ejecutar sin preguntar
-    Ask,       // Preguntar antes de ejecutar
-    Deny,      // No ejecutar nunca
+    Auto, // Ejecutar sin preguntar
+    Ask,  // Preguntar antes de ejecutar
+    Deny, // No ejecutar nunca
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -26,52 +26,99 @@ impl Default for Permissions {
         let mut tools = HashMap::new();
 
         // Herramientas seguras - auto approve
-        tools.insert("read_file".to_string(), ToolPermission {
-            level: PermissionLevel::Auto,
-            description: "Leer archivos".to_string(),
-        });
-        tools.insert("list_dir".to_string(), ToolPermission {
-            level: PermissionLevel::Auto,
-            description: "Listar directorios".to_string(),
-        });
-        tools.insert("search_files".to_string(), ToolPermission {
-            level: PermissionLevel::Auto,
-            description: "Buscar archivos".to_string(),
-        });
-        tools.insert("memory".to_string(), ToolPermission {
-            level: PermissionLevel::Auto,
-            description: "Memoria a largo plazo".to_string(),
-        });
-        tools.insert("process".to_string(), ToolPermission {
-            level: PermissionLevel::Auto,
-            description: "Listar procesos".to_string(),
-        });
+        tools.insert(
+            "read_file".to_string(),
+            ToolPermission {
+                level: PermissionLevel::Auto,
+                description: "Leer archivos".to_string(),
+            },
+        );
+        tools.insert(
+            "list_dir".to_string(),
+            ToolPermission {
+                level: PermissionLevel::Auto,
+                description: "Listar directorios".to_string(),
+            },
+        );
+        tools.insert(
+            "search_files".to_string(),
+            ToolPermission {
+                level: PermissionLevel::Auto,
+                description: "Buscar archivos".to_string(),
+            },
+        );
+        tools.insert(
+            "memory".to_string(),
+            ToolPermission {
+                level: PermissionLevel::Auto,
+                description: "Memoria a largo plazo".to_string(),
+            },
+        );
+        tools.insert(
+            "process".to_string(),
+            ToolPermission {
+                level: PermissionLevel::Auto,
+                description: "Gestionar procesos del sistema".to_string(),
+            },
+        );
+        tools.insert(
+            "grep".to_string(),
+            ToolPermission {
+                level: PermissionLevel::Auto,
+                description: "Buscar en archivos".to_string(),
+            },
+        );
+        tools.insert(
+            "edit_file".to_string(),
+            ToolPermission {
+                level: PermissionLevel::Ask,
+                description: "Editar archivos".to_string(),
+            },
+        );
+        tools.insert(
+            "patch_file".to_string(),
+            ToolPermission {
+                level: PermissionLevel::Ask,
+                description: "Aplicar parches".to_string(),
+            },
+        );
 
         // Herramientas que modifican - ask
-        tools.insert("write_file".to_string(), ToolPermission {
-            level: PermissionLevel::Ask,
-            description: "Crear/modificar archivos".to_string(),
-        });
-        tools.insert("shell".to_string(), ToolPermission {
-            level: PermissionLevel::Ask,
-            description: "Ejecutar comandos".to_string(),
-        });
-        tools.insert("http_request".to_string(), ToolPermission {
-            level: PermissionLevel::Ask,
-            description: "Peticiones HTTP".to_string(),
-        });
-        tools.insert("schedule".to_string(), ToolPermission {
-            level: PermissionLevel::Ask,
-            description: "Programar tareas".to_string(),
-        });
-        tools.insert("process".to_string(), ToolPermission {
-            level: PermissionLevel::Ask,
-            description: "Matar procesos".to_string(),
-        });
-        tools.insert("sql_query".to_string(), ToolPermission {
-            level: PermissionLevel::Ask,
-            description: "Ejecutar SQL".to_string(),
-        });
+        tools.insert(
+            "write_file".to_string(),
+            ToolPermission {
+                level: PermissionLevel::Ask,
+                description: "Crear/modificar archivos".to_string(),
+            },
+        );
+        tools.insert(
+            "shell".to_string(),
+            ToolPermission {
+                level: PermissionLevel::Ask,
+                description: "Ejecutar comandos".to_string(),
+            },
+        );
+        tools.insert(
+            "http_request".to_string(),
+            ToolPermission {
+                level: PermissionLevel::Ask,
+                description: "Peticiones HTTP".to_string(),
+            },
+        );
+        tools.insert(
+            "schedule".to_string(),
+            ToolPermission {
+                level: PermissionLevel::Ask,
+                description: "Programar tareas".to_string(),
+            },
+        );
+        tools.insert(
+            "sql_query".to_string(),
+            ToolPermission {
+                level: PermissionLevel::Ask,
+                description: "Ejecutar SQL".to_string(),
+            },
+        );
 
         Permissions { tools }
     }
@@ -99,6 +146,23 @@ impl Permissions {
         Ok(())
     }
 
+    pub fn apply_overrides(&mut self, overrides: &[(&str, PermissionLevel)]) -> Vec<String> {
+        let mut changed = Vec::new();
+        for (tool, level) in overrides {
+            let before = self.check(tool).clone();
+            if &before != level {
+                self.set_level(tool, level.clone());
+                let label = match level {
+                    PermissionLevel::Auto => "auto",
+                    PermissionLevel::Ask => "ask",
+                    PermissionLevel::Deny => "deny",
+                };
+                changed.push(format!("{} -> {}", tool, label));
+            }
+        }
+        changed
+    }
+
     pub fn check(&self, tool_name: &str) -> &PermissionLevel {
         self.tools
             .get(tool_name)
@@ -110,10 +174,13 @@ impl Permissions {
         if let Some(perm) = self.tools.get_mut(tool_name) {
             perm.level = level;
         } else {
-            self.tools.insert(tool_name.to_string(), ToolPermission {
-                level,
-                description: tool_name.to_string(),
-            });
+            self.tools.insert(
+                tool_name.to_string(),
+                ToolPermission {
+                    level,
+                    description: tool_name.to_string(),
+                },
+            );
         }
     }
 }

@@ -81,17 +81,12 @@ impl ProcessTool {
                 .args(["/FO", "CSV", "/NH"])
                 .output()?
         } else {
-            Command::new("ps")
-                .args(["aux", "--sort=-pcpu"])
-                .output()?
+            Command::new("ps").args(["aux", "--sort=-pcpu"]).output()?
         };
 
         let stdout = String::from_utf8_lossy(&output.stdout).to_string();
         let lines: Vec<&str> = stdout.lines().take(20).collect();
-        Ok(format!(
-            "Top 20 procesos:\n{}",
-            lines.join("\n")
-        ))
+        Ok(format!("Top 20 procesos:\n{}", lines.join("\n")))
     }
 
     async fn kill_process(&self, pid: Option<i64>, name: Option<&str>) -> Result<String> {
@@ -114,9 +109,7 @@ impl ProcessTool {
                     .args(["/IM", name, "/F"])
                     .output()?
             } else {
-                Command::new("pkill")
-                    .args(["-9", name])
-                    .output()?
+                Command::new("pkill").args(["-9", name]).output()?
             };
             let stdout = String::from_utf8_lossy(&output.stdout).to_string();
             let stderr = String::from_utf8_lossy(&output.stderr).to_string();

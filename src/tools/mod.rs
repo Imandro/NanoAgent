@@ -2,16 +2,16 @@ use anyhow::Result;
 use async_trait::async_trait;
 use serde_json::Value;
 
-pub mod shell;
-pub mod filesystem;
-pub mod http;
 pub mod database;
-pub mod process;
-pub mod search;
-pub mod schedule;
-pub mod memory;
 pub mod editor;
+pub mod filesystem;
 pub mod grep;
+pub mod http;
+pub mod memory;
+pub mod process;
+pub mod schedule;
+pub mod search;
+pub mod shell;
 
 use crate::providers::ToolDefinition;
 
@@ -36,7 +36,9 @@ impl ToolRegistry {
         registry.tools.push(Box::new(filesystem::ListDirTool));
         registry.tools.push(Box::new(search::SearchTool));
         registry.tools.push(Box::new(grep::GrepTool));
-        registry.tools.push(Box::new(memory::MemoryTool::new(&data_dir.to_path_buf())));
+        registry
+            .tools
+            .push(Box::new(memory::MemoryTool::new(&data_dir.to_path_buf())));
         registry.tools.push(Box::new(process::ProcessTool));
 
         // Escritura (peligrosas - ask)
@@ -66,11 +68,15 @@ impl ToolRegistry {
     }
 
     pub fn list_tools(&self) -> Vec<(&str, &str, bool)> {
-        self.tools.iter().map(|t| {
-            let safe = matches!(t.name(), 
-                "read_file" | "list_dir" | "search_files" | "grep" | "memory" | "process"
-            );
-            (t.name(), t.description(), safe)
-        }).collect()
+        self.tools
+            .iter()
+            .map(|t| {
+                let safe = matches!(
+                    t.name(),
+                    "read_file" | "list_dir" | "search_files" | "grep" | "memory" | "process"
+                );
+                (t.name(), t.description(), safe)
+            })
+            .collect()
     }
 }
